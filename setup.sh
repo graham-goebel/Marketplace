@@ -14,7 +14,7 @@ node generate-icons.js
 
 # ── 2. Install & copy SheetJS ─────────────────────────────────────────────────
 echo ""
-echo "2/2  Installing SheetJS..."
+echo "2/3  Installing dependencies (xlsx + exceljs)..."
 
 if ! command -v npm &>/dev/null; then
   echo "ERROR: npm not found. Install Node.js from https://nodejs.org/"
@@ -23,6 +23,10 @@ fi
 
 npm install --silent
 node install-deps.js
+
+echo ""
+echo "3/3  Generating sample template (sample-listings.xlsx)..."
+node create-sample.js
 
 echo ""
 echo "✓ Setup complete!"

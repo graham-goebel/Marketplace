@@ -191,6 +191,24 @@ body {
   background: #F0FFF0;
 }
 
+.btn-download {
+  width: 100%;
+  justify-content: center;
+  margin-top: 7px;
+  height: 30px;
+  background: none;
+  color: var(--fb-blue);
+  border: 1.5px solid var(--gray-100);
+  font-size: 12px;
+  font-weight: 500;
+  gap: 5px;
+}
+
+.btn-download:hover {
+  background: #EEF3FF;
+  border-color: var(--fb-blue);
+}
+
 /* Listings Table */
 .table-container {
   flex: 1;

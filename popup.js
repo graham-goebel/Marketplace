@@ -61,6 +61,7 @@
     searchInput.addEventListener('input', handleSearch);
     autofillBtn.addEventListener('click', handleAutofill);
     clearBtn.addEventListener('click', handleClear);
+    $id('downloadTemplate').addEventListener('click', handleDownloadTemplate);
     $id('openOptions').addEventListener('click', (e) => {
       e.preventDefault();
       chrome.runtime.openOptionsPage();
@@ -350,6 +351,27 @@
   function getField(row, key) {
     const col = columns.find((c) => c.toLowerCase() === key.toLowerCase());
     return col ? (row[col] || '') : '';
+  }
+
+  // ── Download template ──────────────────────────────────────────────────────
+  async function handleDownloadTemplate() {
+    try {
+      const url  = chrome.runtime.getURL('sample-listings.xlsx');
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Template file not found — run setup.sh first');
+      const blob    = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a       = document.createElement('a');
+      a.href        = blobUrl;
+      a.download    = 'marketplace-listings-template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      showToast('Template downloaded!', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
   }
 
   // ── Clear ──────────────────────────────────────────────────────────────────
