@@ -10,24 +10,24 @@
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
   const $id = (id) => document.getElementById(id);
-  const statusDot = $id('statusDot');
-  const statusText = $id('statusText');
-  const sheetsUrl = $id('sheetsUrl');
-  const loadSheetsBtn = $id('loadSheets');
-  const fileInput = $id('fileInput');
-  const fileLabel = $id('fileLabel');
-  const fileLabelText = $id('fileLabelText');
+  const statusDot      = $id('statusDot');
+  const statusText     = $id('statusText');
+  const sheetsUrl      = $id('sheetsUrl');
+  const loadSheetsBtn  = $id('loadSheets');
+  const fileInput      = $id('fileInput');
+  const fileLabel      = $id('fileLabel');
+  const fileLabelText  = $id('fileLabelText');
   const tableContainer = $id('tableContainer');
-  const tableHead = $id('tableHead');
-  const tableBody = $id('tableBody');
-  const tableCount = $id('tableCount');
-  const searchInput = $id('searchInput');
+  const tableHead      = $id('tableHead');
+  const tableBody      = $id('tableBody');
+  const tableCount     = $id('tableCount');
+  const searchInput    = $id('searchInput');
   const selectedPreview = $id('selectedPreview');
-  const selectedTitle = $id('selectedTitle');
-  const selectedFields = $id('selectedFields');
-  const autofillBtn = $id('autofillBtn');
-  const clearBtn = $id('clearBtn');
-  const toast = $id('toast');
+  const selectedTitle  = $id('selectedTitle');
+  const copyFields     = $id('copyFields');
+  const autofillBtn    = $id('autofillBtn');
+  const clearBtn       = $id('clearBtn');
+  const toast          = $id('toast');
 
   // ── Init ───────────────────────────────────────────────────────────────────
   init();
@@ -270,31 +270,81 @@
   }
 
   // ── Selection ──────────────────────────────────────────────────────────────
+  // Copy-field definitions in display order
+  const COPY_FIELDS = [
+    { key: 'title',       label: 'Title' },
+    { key: 'price',       label: 'Price' },
+    { key: 'category',    label: 'Category' },
+    { key: 'condition',   label: 'Condition' },
+    { key: 'description', label: 'Description' },
+    { key: 'location',    label: 'Location' },
+    { key: 'tags',        label: 'Tags' },
+  ];
+
   function updateSelection(idx) {
     selectedIndex = idx;
-    if (idx < 0 || !allRows[idx]) {
-      selectedPreview.classList.add('hidden');
-      autofillBtn.disabled = true;
-      clearBtn.disabled = true;
-      return;
-    }
+    const hasSelection = idx >= 0 && !!allRows[idx];
+
+    document.body.classList.toggle('has-selection', hasSelection);
+    selectedPreview.classList.toggle('hidden', !hasSelection);
+    autofillBtn.disabled = !hasSelection;
+    clearBtn.disabled    = !hasSelection;
+
+    if (!hasSelection) return;
+
     const row = allRows[idx];
-    autofillBtn.disabled = false;
-    clearBtn.disabled = false;
     selectedTitle.textContent = getField(row, 'title') || Object.values(row)[0] || '(no title)';
-    selectedFields.innerHTML = buildPreviewChips(row);
-    selectedPreview.classList.remove('hidden');
+    copyFields.innerHTML = buildCopyFields(row);
+
+    // Wire click handlers on freshly rendered rows
+    copyFields.querySelectorAll('.copy-row').forEach((el) => {
+      el.addEventListener('click', () => handleCopyField(el));
+    });
   }
 
-  function buildPreviewChips(row) {
-    const SHOW = ['price', 'category', 'condition', 'location'];
-    return SHOW
-      .map((key) => {
-        const col = columns.find((c) => c.toLowerCase() === key);
-        if (!col || !row[col]) return '';
-        return `<div class="preview-chip"><span>${key}:</span> ${escHtml(truncate(row[col], 20))}</div>`;
-      })
-      .join('');
+  function buildCopyFields(row) {
+    return COPY_FIELDS.map(({ key, label }) => {
+      const col = columns.find((c) => c.toLowerCase() === key.toLowerCase());
+      const val = col ? (row[col] || '').trim() : '';
+      if (!val) return '';
+
+      const display = key === 'description' ? truncate(val, 72) : truncate(val, 48);
+      return `
+        <div class="copy-row" data-value="${escHtml(val)}">
+          <span class="copy-label">${label}</span>
+          <span class="copy-value" title="${escHtml(val)}">${escHtml(display)}</span>
+          <svg class="copy-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Copy field handler ─────────────────────────────────────────────────────
+  async function handleCopyField(el) {
+    const value = el.dataset.value;
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+
+      // Visual feedback — green flash then settle
+      el.classList.add('copied');
+      const icon = el.querySelector('.copy-icon');
+      if (icon) {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+        icon.setAttribute('stroke', 'currentColor');
+      }
+      setTimeout(() => {
+        el.classList.remove('copied');
+        if (icon) {
+          icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+        }
+      }, 1200);
+    } catch {
+      showToast('Clipboard access denied', 'error');
+    }
   }
 
   // ── Autofill ───────────────────────────────────────────────────────────────

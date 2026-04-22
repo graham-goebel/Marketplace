@@ -311,73 +311,148 @@ tbody tr.selected td {
 }
 
 /* Selected Preview */
+/* Shrink table rows when a listing is selected so copy panel fits */
+body.has-selection .table-scroll {
+  max-height: 88px;
+}
+
+/* ── Selected listing / click-to-copy panel ─────────────────────────────── */
 .selected-preview {
   flex-shrink: 0;
-  border-top: 1px solid var(--gray-100);
-  padding: 8px 14px;
-  background: var(--gray-50);
+  border-top: 2px solid var(--fb-blue);
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
 }
 
 .selected-preview.hidden { display: none; }
 
-.preview-title {
+.copy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px 5px;
+  background: #EEF3FF;
+  gap: 8px;
+}
+
+.copy-header-left {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  color: var(--gray-500);
-  margin-bottom: 5px;
+  color: var(--fb-blue);
+  min-width: 0;
 }
 
-.preview-title strong {
+.copy-listing-title {
+  font-size: 12.5px;
+  font-weight: 700;
   color: var(--gray-900);
-  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.preview-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.preview-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 7px;
-  background: var(--white);
-  border: 1px solid var(--gray-100);
-  border-radius: 10px;
+.copy-hint {
   font-size: 11px;
-  color: var(--gray-700);
-}
-
-.preview-chip span {
-  color: var(--gray-500);
+  color: var(--fb-blue);
+  opacity: 0.7;
+  flex-shrink: 0;
   font-weight: 500;
 }
 
-/* Action Bar */
-.action-bar {
+/* ── Copy rows ─────────────────────────────────────────────────────────── */
+.copy-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.copy-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--gray-100);
-  background: var(--white);
+  gap: 10px;
+  padding: 5px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.1s;
+  position: relative;
+  user-select: none;
+}
+
+.copy-row:last-child { border-bottom: none; }
+
+.copy-row:hover {
+  background: #EEF3FF;
+}
+
+.copy-row:active {
+  background: #DDEEFF;
+}
+
+.copy-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 68px;
   flex-shrink: 0;
 }
 
-/* Buttons */
+.copy-value {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--gray-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-icon {
+  flex-shrink: 0;
+  color: var(--gray-300);
+  transition: color 0.12s;
+}
+
+.copy-row:hover .copy-icon {
+  color: var(--fb-blue);
+}
+
+/* Copied state — green flash */
+.copy-row.copied {
+  background: #F0FFF4;
+  animation: copyFlash 0.25s ease;
+}
+
+.copy-row.copied .copy-label { color: var(--green); }
+.copy-row.copied .copy-value { color: var(--green); font-weight: 500; }
+.copy-row.copied .copy-icon  { color: var(--green); }
+
+@keyframes copyFlash {
+  0%   { background: #C6F6D5; }
+  100% { background: #F0FFF4; }
+}
+
+/* ── Copy panel footer ────────────────────────────────────────────────── */
+.copy-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  border-top: 1px solid var(--gray-100);
+  background: var(--gray-50);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 14px;
-  height: 34px;
+  gap: 5px;
+  padding: 0 12px;
+  height: 32px;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
@@ -387,9 +462,16 @@ tbody tr.selected td {
 .btn:active { transform: scale(0.97); }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-sm {
+  height: 26px;
+  padding: 0 9px;
+  font-size: 11.5px;
+  font-weight: 600;
 }
 
 .btn-primary {
@@ -404,7 +486,6 @@ tbody tr.selected td {
 .btn-secondary {
   background: var(--gray-100);
   color: var(--gray-700);
-  padding: 0 12px;
 }
 
 .btn-secondary:hover:not(:disabled) { background: var(--gray-300); }
@@ -412,14 +493,13 @@ tbody tr.selected td {
 .btn-ghost {
   background: none;
   color: var(--gray-500);
-  padding: 0 10px;
   border: 1.5px solid var(--gray-100);
 }
 
 .btn-ghost:hover:not(:disabled) {
   background: var(--gray-50);
-  color: var(--red);
-  border-color: var(--red);
+  color: var(--gray-700);
+  border-color: var(--gray-300);
 }
 
 /* Toast */
