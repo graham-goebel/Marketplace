@@ -223,15 +223,10 @@
   });
 
   // ── Mobile sidebar toggle ─────────────────────────────────
-  const sidebar      = document.getElementById('sidebar');
-  const mobileToggle = document.getElementById('mobile-toggle');
-
-  mobileToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-  });
-
   map.on('click', () => {
-    if (window.innerWidth <= 768) sidebar.classList.remove('open');
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('open');
+    }
   });
 
   // ── Init ──────────────────────────────────────────────────
